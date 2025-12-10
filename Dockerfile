@@ -9,6 +9,7 @@ ARG EFCPT_VERSION=10.*
 ARG VERSION=1.0.0
 ARG DATABASE_BACKUP_URL=https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2022.bak
 ARG DATABASE_NAME=AdventureWorks2022
+ARG DATABASE_BACKUP_FILE
 ARG SA_PASSWORD=Your_SA_Password123!
 ARG IMAGE_REPOSITORY=local/database-containerizer
 ARG COMMIT_SHA=local
@@ -24,6 +25,7 @@ ENV ACCEPT_EULA=Y \
     SQLCMDTRUSTSERVERCERTIFICATE=true \
     DATABASE_NAME=${DATABASE_NAME} \
     DATABASE_BACKUP_URL=${DATABASE_BACKUP_URL} \
+    DATABASE_BACKUP_FILE=${DATABASE_BACKUP_FILE} \
     EFCPT_VERSION=${EFCPT_VERSION} \
     EFCORE_VERSION=${EFCORE_VERSION} \
     IMAGE_REPOSITORY=${IMAGE_REPOSITORY} \
@@ -74,10 +76,14 @@ ENV PATH="$PATH:/opt/sqlpackage"
 # Prepare backup + scripts + artifacts folder
 RUN mkdir -p /var/opt/mssql/backup /scripts /artifacts
 
-# Download the backup
-RUN curl -L \
-    -o "/var/opt/mssql/backup/${DATABASE_NAME}.bak" \
-    "${DATABASE_BACKUP_URL}"
+# Download or copy the backup
+RUN if [ -n "$DATABASE_BACKUP_FILE" ]; then \
+        cp "$DATABASE_BACKUP_FILE" "/var/opt/mssql/backup/${DATABASE_NAME}.bak"; \   
+    else \
+        curl -L \
+            -o "/var/opt/mssql/backup/${DATABASE_NAME}.bak" \
+        "${DATABASE_BACKUP_URL}" ; \
+    fi
 
 # Bring in the build-time script
 COPY restore-and-generate.sh /scripts/restore-and-generate.sh
