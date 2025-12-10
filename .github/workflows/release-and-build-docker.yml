@@ -75,8 +75,9 @@ jobs:
           # Strip leading v from tag if present, just in case
           CLEAN_VERSION="${VERSION#v}"
 
+          REPO_OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
           REPO_NAME="$(basename '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/${REPO_NAME}"
+          IMAGE_NAME="ghcr.io/${REPO_OWNER}/${REPO_NAME}"
 
           echo "Building Docker image ${IMAGE_NAME}:${CLEAN_VERSION}"
 
