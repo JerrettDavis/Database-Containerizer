@@ -1,0 +1,5 @@
+{
+    "name": "database-containerizer",
+    "version": "1.0.0",
+    "description": "A .NET project to containerize a SQL Server database with Entity Framework Core migrations."
+}

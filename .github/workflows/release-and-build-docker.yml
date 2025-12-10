@@ -1,0 +1,110 @@
+name: Release & Build Docker (Conventional Commits)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write       
+  issues: write
+  pull-requests: write
+  id-token: write
+  packages: write
+
+jobs:
+  release:
+    name: Conventional Release
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.automatic_versioning.outputs.version }}
+      tag: ${{ steps.automatic_versioning.outputs.tag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create Package.json for Versioning
+        run: |
+          if [ ! -f package.json ]; then
+            echo '{"name": "database-containerizer", "version": "1.0.0"}' > package.json
+          fi
+
+      - name: Conventional Release Action
+        id: automatic_versioning
+        uses: onesoft-sudo/conventional-release-action@v1.5.1
+
+      - name: Show computed version and tag
+        run: |
+          echo "Version: ${{ steps.automatic_versioning.outputs.version }}"
+          echo "Tag:     ${{ steps.automatic_versioning.outputs.tag }}"
+          echo "Notes:"
+          echo "${{ steps.automatic_versioning.outputs.release_notes }}"
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1.20.0
+        if: ${{ steps.automatic_versioning.outputs.tag != '' }}
+        with:
+          tag: ${{ steps.automatic_versioning.outputs.tag }}
+          body: ${{ steps.automatic_versioning.outputs.release_notes }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  build_docker:
+    name: Build & Push Docker
+    needs: release
+    runs-on: ubuntu-latest
+    if: ${{ needs.release.outputs.version != '' && needs.release.outputs.tag != '' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          TAG="${{ needs.release.outputs.tag }}"
+          # Strip leading v from tag if present, just in case
+          CLEAN_VERSION="${VERSION#v}"
+
+          REPO_NAME="$(basename '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/${REPO_NAME}"
+
+          echo "Building Docker image ${IMAGE_NAME}:${CLEAN_VERSION}"
+
+          docker build \
+            --build-arg VERSION="${CLEAN_VERSION}" \
+            --build-arg IMAGE_REPOSITORY="${IMAGE_NAME}" \
+            --build-arg COMMIT_SHA="${GITHUB_SHA}" \
+            -t "${IMAGE_NAME}:${CLEAN_VERSION}" \
+            -t "${IMAGE_NAME}:latest" \
+            .
+
+          echo "Pushing Docker image ${IMAGE_NAME}:${CLEAN_VERSION} and :latest"
+          docker push "${IMAGE_NAME}:${CLEAN_VERSION}"
+          docker push "${IMAGE_NAME}:latest"
+
+      - name: Summary
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          TAG="${{ needs.release.outputs.tag }}"
+          CLEAN_VERSION="${VERSION#v}"
+          REPO_NAME="$(basename '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/${REPO_NAME}"
+
+          {
+            echo "## Docker Release Summary"
+            echo ""
+            echo "- Tag: \`${TAG}\`"
+            echo "- Version: \`${CLEAN_VERSION}\`"
+            echo "- Image: \`${IMAGE_NAME}:${CLEAN_VERSION}\`"
+            echo "- Latest: \`${IMAGE_NAME}:latest\`"
+          } >> "$GITHUB_STEP_SUMMARY"
