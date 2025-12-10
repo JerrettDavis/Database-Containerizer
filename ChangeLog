@@ -1,6 +1,14 @@
 10-12-2025  Jerrett D. Davis <mxjerrett@gmail.com>
 
+     [*] ci: tweaked docker push to force lowercase image name
+         
+
      [*] feat: added ability to restore from local backup
          
 
      [*] feat: initial commit
+         
+
+10-12-2025  Conventional Release Action <conventional-release@onesoftnet.eu.org>
+
+     [*] chore(release): v1.1.0 [skip ci]
