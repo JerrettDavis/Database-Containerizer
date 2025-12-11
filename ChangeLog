@@ -1,3 +1,19 @@
+11-12-2025  Jerrett Davis <jd@jerrettdavis.com>
+
+     [*] feat: added build and test scripts. Updated readme
+         
+
+10-12-2025  Conventional Release Action <conventional-release@onesoftnet.eu.org>
+
+     [*] chore(release): v1.6.0 [skip ci]
+         
+
+     [*] chore(release): v1.3.0 [skip ci]
+         
+
+     [*] chore(release): v1.1.0 [skip ci]
+         
+
 10-12-2025  Jerrett D. Davis <mxjerrett@gmail.com>
 
      [*] feat: made dockerfile and restore-and-generatre.sh scripts more structured. Added ability to inject efcpt-config.json via url or file.
@@ -10,11 +26,3 @@
          
 
      [*] feat: initial commit
-         
-
-10-12-2025  Conventional Release Action <conventional-release@onesoftnet.eu.org>
-
-     [*] chore(release): v1.3.0 [skip ci]
-         
-
-     [*] chore(release): v1.1.0 [skip ci]
