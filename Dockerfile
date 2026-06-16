@@ -1,7 +1,7 @@
 # ==========================
 # Stage 1: Builder
 # ==========================
-FROM mcr.microsoft.com/mssql/server:2022-latest AS builder
+FROM mcr.microsoft.com/mssql/server:2025-latest AS builder
 
 # --------------------------
 # Tooling & infrastructure (stable-ish)
@@ -157,7 +157,7 @@ RUN --mount=type=secret,id=sa_password \
 # ==========================
 # Stage 2: Runtime image
 # ==========================
-FROM mcr.microsoft.com/mssql/server:2022-latest
+FROM mcr.microsoft.com/mssql/server:2025-latest
 
 ARG DATABASE_NAME=AdventureWorks2022
 ARG SA_PASSWORD=Your_SA_Password123!
