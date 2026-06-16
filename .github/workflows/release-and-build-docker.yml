@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Create Package.json for Versioning
         run: |
@@ -34,7 +34,7 @@ jobs:
 
       - name: Conventional Release Action
         id: automatic_versioning
-        uses: onesoft-sudo/conventional-release-action@v1.5.1
+        uses: onesoft-sudo/conventional-release-action@v1.8.0
 
       - name: Show computed version and tag
         run: |
@@ -44,7 +44,7 @@ jobs:
           echo "${{ steps.automatic_versioning.outputs.release_notes }}"
 
       - name: Create Release
-        uses: ncipollo/release-action@v1.20.0
+        uses: ncipollo/release-action@v1.21.0
         if: ${{ steps.automatic_versioning.outputs.tag != '' }}
         with:
           tag: ${{ steps.automatic_versioning.outputs.tag }}
@@ -59,10 +59,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
